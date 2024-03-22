@@ -1,21 +1,22 @@
 package com.example.diagnose.services;
 
+import com.example.diagnose.configs.AppConfig;
 import com.example.diagnose.constants.Gender;
+import com.example.diagnose.constants.MedicalRecordStatus;
 import com.example.diagnose.dto.request.DiagnoseRequest;
+import com.example.diagnose.dto.request.ValidateStatusRequest;
+import com.example.diagnose.dto.response.DiagnoseResponseObject;
 import com.example.diagnose.dto.response.DiagnoseResult;
+import com.example.diagnose.dto.response.ValidateResultResponse;
 import com.example.diagnose.models.MedicalRecord;
 import com.example.diagnose.models.User;
-import com.example.diagnose.repositories.MedicalRecordRepository;
 import com.example.diagnose.repositories.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -23,79 +24,142 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service @Slf4j @AllArgsConstructor
 public class UserServiceImplementation implements UserService{
 
-    @Autowired
     private final UserRepository userRepository;
-    @Autowired
-    private final MedicalRecordRepository medicalRecordRepository;
+    private final AppConfig appConfig;
 
     @Override
-    public List<DiagnoseResult> diagnose(DiagnoseRequest diagnoseRequest) throws IOException {
-        System.out.println(diagnoseRequest);
+    public DiagnoseResponseObject diagnose(DiagnoseRequest diagnoseRequest) throws IOException {
         try {
+            UUID uuid = UUID.randomUUID();
             Gender gender = diagnoseRequest.getGender();
             String patientName =  diagnoseRequest.getPatientName();
             List<Integer> symptoms = diagnoseRequest.getSymptoms();
-
             String yearOfBirth = diagnoseRequest.getYearOfBirth();
-            int yob = Integer.parseInt(yearOfBirth);
-            LocalDate date = LocalDate.now();
-            if (yob < date.getYear() - 200 || yob > date.getYear()){
-                throw new IOException("Invalid Year Of Birth");
-            }
 
-            String token ="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImNoZXJyeXBoYXdvZmlyYW55ZUBnbWFpbC5jb20iLCJyb2xlIjoiVXNlciIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL3NpZCI6IjEzNjk4IiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy92ZXJzaW9uIjoiMjAwIiwiaHR0cDovL2V4YW1wbGUub3JnL2NsYWltcy9saW1pdCI6Ijk5OTk5OTk5OSIsImh0dHA6Ly9leGFtcGxlLm9yZy9jbGFpbXMvbWVtYmVyc2hpcCI6IlByZW1pdW0iLCJodHRwOi8vZXhhbXBsZS5vcmcvY2xhaW1zL2xhbmd1YWdlIjoiZW4tZ2IiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL2V4cGlyYXRpb24iOiIyMDk5LTEyLTMxIiwiaHR0cDovL2V4YW1wbGUub3JnL2NsYWltcy9tZW1iZXJzaGlwc3RhcnQiOiIyMDI0LTAzLTIwIiwiaXNzIjoiaHR0cHM6Ly9zYW5kYm94LWF1dGhzZXJ2aWNlLnByaWFpZC5jaCIsImF1ZCI6Imh0dHBzOi8vaGVhbHRoc2VydmljZS5wcmlhaWQuY2giLCJleHAiOjE3MTExMDI3MTYsIm5iZiI6MTcxMTA5NTUxNn0.GzWCX6KnYXplo1Xd5hlSWFrrp3juVKTvpeUDWr83RL0";
-            String baseUrl = "https://sandbox-healthservice.priaid.ch/";
-            String url = baseUrl + "diagnosis" +
-                    "?token=" +
-                    token +
-                    "&language=en-gb&symptoms=" +
-                    symptoms +
-                    "&gender=" +
-                    gender.toString().toLowerCase() +
-                    "&year_of_birth=" +
-                    yob;
+            Optional<User> foundUser = userRepository.findByPatientName(patientName);
+
+            int yob = validateYearOfBirth(yearOfBirth);
             RestTemplate restTemplate = new RestTemplate();
-            HttpHeaders headers = new HttpHeaders();
-            headers.setAccept(List.of(MediaType.APPLICATION_JSON));
-            headers.set("Content-Type", "application/json");
-            HttpEntity<DiagnoseRequest> request =
-                    new HttpEntity<>(diagnoseRequest, headers);
+            String url = getUrl(gender, symptoms, yob);
+            log.info("Requestss {}", url);
             var response = restTemplate.getForEntity(url, Object.class);
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            String jsonArray = null;
-            try {
-                jsonArray = objectMapper.writeValueAsString(response.getBody());
-            }
-            catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
-            List<DiagnoseResult> res = objectMapper.readValue(jsonArray, new TypeReference<>() {
-            });
-
-            MedicalRecord medicalRecord = new MedicalRecord();
-            medicalRecord.setSymptoms(symptoms);
-            medicalRecord.setDiagnoseResults(res);
-
-            medicalRecordRepository.save(medicalRecord);
-
-            List<MedicalRecord> medicalRecords = medicalRecordRepository.findBySymptoms(symptoms);
-
+            List<DiagnoseResult> diagnoseResults = convertToObject(response);
+            MedicalRecord medicalRecord = getMedicalRecord(patientName, symptoms, diagnoseResults, uuid);
+            if (foundUser.isPresent()){
+                User user = foundUser.get();
+                user.getMedicalRecords().add(medicalRecord);
+                userRepository.save(user);
+                DiagnoseResponseObject responseObject = getDiagnoseResponseObject(diagnoseResults, medicalRecord, user);
+                return responseObject;
+            }else{
             User user = new User();
             user.setPatientName(patientName);
-            user.setMedicalRecords(medicalRecords);
+            user.getMedicalRecords().add(medicalRecord);
 
-            userRepository.save(user);
+            User savedUser = userRepository.save(user);
 
+            DiagnoseResponseObject responseObject = getDiagnoseResponseObject(diagnoseResults, medicalRecord, savedUser);
+            return responseObject;
+            }
 
-            return res;
         } catch (IOException e){
-            throw new IOException(e + "Calls can't be reached");
+            throw new IOException(e + " Calls can't be reached");
         }
 
     }
+
+    private static DiagnoseResponseObject getDiagnoseResponseObject(List<DiagnoseResult> diagnoseResults, MedicalRecord medicalRecord, User user) {
+        DiagnoseResponseObject responseObject = new DiagnoseResponseObject();
+        responseObject.setDiagnoseResults(diagnoseResults);
+        responseObject.setUserId(user.getId());
+        responseObject.setMedicalRecordId(medicalRecord.getId());
+        return responseObject;
+    }
+
+    private MedicalRecord getMedicalRecord(String patientName, List<Integer> symptoms, List<DiagnoseResult> diagnoseResults, UUID uuid) {
+        MedicalRecord medicalRecord = new MedicalRecord();
+        medicalRecord.setSymptoms(symptoms);
+        medicalRecord.setDiagnoseResults(diagnoseResults);
+        medicalRecord.setPatientName(patientName);
+        medicalRecord.setId(uuid);
+
+        return medicalRecord;
+    }
+
+    private static List<DiagnoseResult> convertToObject(ResponseEntity<Object> response) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonArray = null;
+        try {
+            jsonArray = objectMapper.writeValueAsString(response.getBody());
+        }
+        catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        List<DiagnoseResult> diagnoseResults = objectMapper.readValue(jsonArray, new TypeReference<>() {
+        });
+        return diagnoseResults;
+    }
+
+    private static int validateYearOfBirth(String yearOfBirth) throws IOException {
+        int yob = Integer.parseInt(yearOfBirth);
+        LocalDate date = LocalDate.now();
+        if (yob < date.getYear() - 200 || yob > date.getYear()){
+            throw new IOException("Invalid Year Of Birth");
+        }
+        return yob;
+    }
+
+    private String getUrl(Gender gender, List<Integer> symptoms, int yob) {
+        String token = appConfig.getToken();
+        String baseUrl = appConfig.getBaseUrl();
+        String url = baseUrl + "diagnosis" +
+                "?token=" +
+                token +
+                "&language=en-gb&symptoms=" +
+                symptoms +
+                "&gender=" +
+                gender.toString().toLowerCase() +
+                "&year_of_birth=" +
+                yob;
+        return url;
+    }
+
+    @Override
+    public ValidateResultResponse validateDiagnoseResult(ValidateStatusRequest validateStatusRequest) {
+        String patientName = validateStatusRequest.getPatientName();
+        UUID medicalRecordId = validateStatusRequest.getMedicalRecordId();
+        MedicalRecordStatus medicalRecordStatus = MedicalRecordStatus.valueOf(validateStatusRequest.getStatus());
+
+        Optional<User> foundUser = userRepository.findByPatientName(patientName);
+        if (foundUser.isPresent()){
+            User user = foundUser.get();
+            List<MedicalRecord> medicalRecords = user.getMedicalRecords();
+            MedicalRecord foundMedicalRecord = medicalRecords.stream().filter(medicalRecord -> medicalRecord.getId() == medicalRecordId).toList().get(0);
+            foundMedicalRecord.setMedicalRecordStatus(medicalRecordStatus);
+            userRepository.save(user);
+
+            ValidateResultResponse resultResponse = new ValidateResultResponse();
+            resultResponse.setMessage("STATUS IS SUCCESSFULLY UPDATED");
+
+            return resultResponse;
+        }
+        return null;
+    }
+
+    @Override
+    public List<MedicalRecord> searchResults(String patientName) {
+        Optional<User> foundUser = userRepository.findByPatientName(patientName);
+        if (foundUser.isPresent()){
+            List<MedicalRecord> medicalRecords = foundUser.get().getMedicalRecords();
+            return medicalRecords;
+        }
+        return null;
+    }
+
 }

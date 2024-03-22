@@ -6,10 +6,10 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration @Getter
 public class AppConfig {
-    @Value("${}")
+    @Value("${base.url}")
     private String baseUrl;
 
-    @Value("${}")
+    @Value("${app.token}")
     private String token;
 
 }

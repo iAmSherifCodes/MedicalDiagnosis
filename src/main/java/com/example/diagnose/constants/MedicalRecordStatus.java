@@ -1,5 +1,5 @@
 package com.example.diagnose.constants;
 
-public enum ResultStatus {
+public enum MedicalRecordStatus {
     VALID, INVALID
 }

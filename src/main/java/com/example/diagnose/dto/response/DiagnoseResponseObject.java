@@ -2,11 +2,14 @@ package com.example.diagnose.dto.response;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-@Getter @Setter
+@Getter @Setter @ToString
 public class DiagnoseResponseObject {
-    private List<DiagnoseResult> diagnoseResults = new ArrayList<>();
+    private String userId;
+    private UUID medicalRecordId;
+    private List<DiagnoseResult> diagnoseResults;
 }
