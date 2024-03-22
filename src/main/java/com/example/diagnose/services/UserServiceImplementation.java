@@ -23,6 +23,7 @@ import org.springframework.web.client.RestTemplate;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -140,7 +141,10 @@ public class UserServiceImplementation implements UserService{
         if (foundUser.isPresent()){
             User user = foundUser.get();
             List<MedicalRecord> medicalRecords = user.getMedicalRecords();
-            MedicalRecord foundMedicalRecord = medicalRecords.stream().filter(medicalRecord -> medicalRecord.getId() == medicalRecordId).toList().get(0);
+            MedicalRecord foundMedicalRecord = medicalRecords.stream()
+                    .filter(record -> record.getId() == medicalRecordId)
+                    .findFirst()
+                    .orElseThrow(() -> new NoSuchElementException("Medical record not found with ID: " + medicalRecordId));
             foundMedicalRecord.setMedicalRecordStatus(medicalRecordStatus);
             userRepository.save(user);
 

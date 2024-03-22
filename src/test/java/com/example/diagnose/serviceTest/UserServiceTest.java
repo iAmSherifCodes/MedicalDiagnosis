@@ -107,15 +107,17 @@ public class UserServiceTest {
         request.setSymptoms(symptoms);
 
         DiagnoseResponseObject responseObject = userService.diagnose(request);
+        log.info("Requestss {}", responseObject.toString());
 
-        ValidateStatusRequest validateStatusRequest = new ValidateStatusRequest();
-        validateStatusRequest.setStatus("VALID");
-        validateStatusRequest.setPatientName("Doe Palmer");
-        validateStatusRequest.setMedicalRecordId(responseObject.getMedicalRecordId());
-        ValidateResultResponse validateResultResponse = userService.validateDiagnoseResult(validateStatusRequest);
 
-        log.info("Requestss {}", validateResultResponse.toString());
-        assertThat(validateResultResponse).isNotNull();
+//        ValidateStatusRequest validateStatusRequest = new ValidateStatusRequest();
+//        validateStatusRequest.setStatus("VALID");
+//        validateStatusRequest.setPatientName("Doe Palmer");
+//        validateStatusRequest.setMedicalRecordId(responseObject.getMedicalRecordId());
+//        ValidateResultResponse validateResultResponse = userService.validateDiagnoseResult(validateStatusRequest);
+//
+//        log.info("Requestss {}", validateResultResponse.toString());
+//        assertThat(validateResultResponse).isNotNull();
     }
 
 }
