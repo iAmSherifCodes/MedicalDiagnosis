@@ -11,5 +11,6 @@ import java.util.List;
 public class DiagnoseRequest {
     private List<Integer> symptoms;
     private Gender gender;
+    private String patientName;
     private String yearOfBirth;
 }
