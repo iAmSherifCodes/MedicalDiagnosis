@@ -5,6 +5,7 @@ import com.example.diagnose.dto.request.ValidateStatusRequest;
 import com.example.diagnose.dto.response.DiagnoseResponseObject;
 import com.example.diagnose.dto.response.DiagnoseResult;
 import com.example.diagnose.dto.response.ValidateResultResponse;
+import com.example.diagnose.exceptions.NotFoundException;
 import com.example.diagnose.models.MedicalRecord;
 
 import java.io.IOException;
@@ -12,7 +13,7 @@ import java.util.List;
 
 public interface UserService {
     DiagnoseResponseObject diagnose(DiagnoseRequest diagnoseRequest) throws IOException;
-    ValidateResultResponse validateDiagnoseResult(ValidateStatusRequest validateStatusRequest);
+    ValidateResultResponse validateDiagnoseResult(ValidateStatusRequest validateStatusRequest) throws NotFoundException;
     List<MedicalRecord> searchResults(String userId);
 
 }

@@ -8,6 +8,7 @@ import com.example.diagnose.dto.request.ValidateStatusRequest;
 import com.example.diagnose.dto.response.DiagnoseResponseObject;
 import com.example.diagnose.dto.response.DiagnoseResult;
 import com.example.diagnose.dto.response.ValidateResultResponse;
+import com.example.diagnose.exceptions.NotFoundException;
 import com.example.diagnose.models.MedicalRecord;
 import com.example.diagnose.models.User;
 import com.example.diagnose.repositories.UserRepository;
@@ -134,7 +135,7 @@ public class UserServiceImplementation implements UserService{
     }
 
     @Override
-    public ValidateResultResponse validateDiagnoseResult(ValidateStatusRequest validateStatusRequest) {
+    public ValidateResultResponse validateDiagnoseResult(ValidateStatusRequest validateStatusRequest) throws NotFoundException {
         String patientName = validateStatusRequest.getPatientName();
         String medicalRecordId = validateStatusRequest.getMedicalRecordId();
         MedicalRecordStatus medicalRecordStatus = MedicalRecordStatus.valueOf(validateStatusRequest.getStatus());
@@ -146,7 +147,7 @@ public class UserServiceImplementation implements UserService{
             MedicalRecord foundMedicalRecord = medicalRecords.stream()
                     .filter(record -> record.getId().equals(medicalRecordId))
                     .findFirst()
-                    .orElseThrow(() -> new NoSuchElementException("Medical record not found with ID: " + medicalRecordId));
+                    .orElseThrow(() -> new NotFoundException("Medical record not found with ID: " + medicalRecordId));
             foundMedicalRecord.setMedicalRecordStatus(medicalRecordStatus);
             userRepository.save(user);
 
