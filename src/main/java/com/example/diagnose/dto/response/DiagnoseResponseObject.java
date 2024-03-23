@@ -10,6 +10,6 @@ import java.util.UUID;
 @Getter @Setter @ToString
 public class DiagnoseResponseObject {
     private String userId;
-    private UUID medicalRecordId;
+    private String medicalRecordId;
     private List<DiagnoseResult> diagnoseResults;
 }

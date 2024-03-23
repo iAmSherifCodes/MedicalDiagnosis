@@ -9,6 +9,6 @@ import java.util.UUID;
 @Setter @Getter
 public class ValidateStatusRequest {
     private String patientName;
-    private UUID medicalRecordId;
+    private String medicalRecordId;
     private String status;
 }

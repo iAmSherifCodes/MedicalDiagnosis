@@ -4,7 +4,6 @@ import com.example.diagnose.constants.Gender;
 import com.example.diagnose.dto.request.DiagnoseRequest;
 import com.example.diagnose.dto.request.ValidateStatusRequest;
 import com.example.diagnose.dto.response.DiagnoseResponseObject;
-import com.example.diagnose.dto.response.DiagnoseResult;
 import com.example.diagnose.dto.response.ValidateResultResponse;
 import com.example.diagnose.models.MedicalRecord;
 import com.example.diagnose.services.UserService;
@@ -17,7 +16,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest @Slf4j
@@ -107,17 +105,17 @@ public class UserServiceTest {
         request.setSymptoms(symptoms);
 
         DiagnoseResponseObject responseObject = userService.diagnose(request);
-        log.info("Requestss {}", responseObject.toString());
+        log.info("Requests {}", responseObject.toString());
 
 
-//        ValidateStatusRequest validateStatusRequest = new ValidateStatusRequest();
-//        validateStatusRequest.setStatus("VALID");
-//        validateStatusRequest.setPatientName("Doe Palmer");
-//        validateStatusRequest.setMedicalRecordId(responseObject.getMedicalRecordId());
-//        ValidateResultResponse validateResultResponse = userService.validateDiagnoseResult(validateStatusRequest);
-//
-//        log.info("Requestss {}", validateResultResponse.toString());
-//        assertThat(validateResultResponse).isNotNull();
+        ValidateStatusRequest validateStatusRequest = new ValidateStatusRequest();
+        validateStatusRequest.setStatus("VALID");
+        validateStatusRequest.setPatientName("Doe Palmer");
+        validateStatusRequest.setMedicalRecordId(responseObject.getMedicalRecordId());
+        ValidateResultResponse validateResultResponse = userService.validateDiagnoseResult(validateStatusRequest);
+
+        log.info("Requestss {}", validateResultResponse.toString());
+        assertThat(validateResultResponse).isNotNull();
     }
 
 }

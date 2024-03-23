@@ -14,7 +14,7 @@ import java.util.UUID;
 
 @Getter @Setter @ToString @Document
 public class MedicalRecord {
-    private UUID id;
+    private String id;
     @Indexed(unique = true)
     private String patientName;
     private List<DiagnoseResult> diagnoseResults;

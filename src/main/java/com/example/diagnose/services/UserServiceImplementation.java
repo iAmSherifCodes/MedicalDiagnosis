@@ -38,6 +38,8 @@ public class UserServiceImplementation implements UserService{
     public DiagnoseResponseObject diagnose(DiagnoseRequest diagnoseRequest) throws IOException {
         try {
             UUID uuid = UUID.randomUUID();
+            String randomId = uuid.toString();
+
             Gender gender = diagnoseRequest.getGender();
             String patientName =  diagnoseRequest.getPatientName();
             List<Integer> symptoms = diagnoseRequest.getSymptoms();
@@ -51,7 +53,7 @@ public class UserServiceImplementation implements UserService{
             log.info("Requestss {}", url);
             var response = restTemplate.getForEntity(url, Object.class);
             List<DiagnoseResult> diagnoseResults = convertToObject(response);
-            MedicalRecord medicalRecord = getMedicalRecord(patientName, symptoms, diagnoseResults, uuid);
+            MedicalRecord medicalRecord = getMedicalRecord(patientName, symptoms, diagnoseResults, randomId);
             if (foundUser.isPresent()){
                 User user = foundUser.get();
                 user.getMedicalRecords().add(medicalRecord);
@@ -83,12 +85,12 @@ public class UserServiceImplementation implements UserService{
         return responseObject;
     }
 
-    private MedicalRecord getMedicalRecord(String patientName, List<Integer> symptoms, List<DiagnoseResult> diagnoseResults, UUID uuid) {
+    private MedicalRecord getMedicalRecord(String patientName, List<Integer> symptoms, List<DiagnoseResult> diagnoseResults, String randomId) {
         MedicalRecord medicalRecord = new MedicalRecord();
         medicalRecord.setSymptoms(symptoms);
         medicalRecord.setDiagnoseResults(diagnoseResults);
         medicalRecord.setPatientName(patientName);
-        medicalRecord.setId(uuid);
+        medicalRecord.setId(randomId);
 
         return medicalRecord;
     }
@@ -134,7 +136,7 @@ public class UserServiceImplementation implements UserService{
     @Override
     public ValidateResultResponse validateDiagnoseResult(ValidateStatusRequest validateStatusRequest) {
         String patientName = validateStatusRequest.getPatientName();
-        UUID medicalRecordId = validateStatusRequest.getMedicalRecordId();
+        String medicalRecordId = validateStatusRequest.getMedicalRecordId();
         MedicalRecordStatus medicalRecordStatus = MedicalRecordStatus.valueOf(validateStatusRequest.getStatus());
 
         Optional<User> foundUser = userRepository.findByPatientName(patientName);
@@ -142,7 +144,7 @@ public class UserServiceImplementation implements UserService{
             User user = foundUser.get();
             List<MedicalRecord> medicalRecords = user.getMedicalRecords();
             MedicalRecord foundMedicalRecord = medicalRecords.stream()
-                    .filter(record -> record.getId() == medicalRecordId)
+                    .filter(record -> record.getId().equals(medicalRecordId))
                     .findFirst()
                     .orElseThrow(() -> new NoSuchElementException("Medical record not found with ID: " + medicalRecordId));
             foundMedicalRecord.setMedicalRecordStatus(medicalRecordStatus);
