@@ -5,6 +5,7 @@ import com.example.diagnose.dto.request.DiagnoseRequest;
 import com.example.diagnose.dto.request.ValidateStatusRequest;
 import com.example.diagnose.dto.response.DiagnoseResponseObject;
 import com.example.diagnose.dto.response.ValidateResultResponse;
+import com.example.diagnose.exceptions.NotFoundException;
 import com.example.diagnose.models.MedicalRecord;
 import com.example.diagnose.services.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -95,7 +96,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void validateDiagnoseResult() throws IOException {
+    void validateDiagnoseResult() throws IOException, NotFoundException {
         DiagnoseRequest request = new DiagnoseRequest();
         request.setGender(Gender.MALE);
         request.setYearOfBirth("1988");

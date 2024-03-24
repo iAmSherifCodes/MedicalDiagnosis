@@ -36,7 +36,7 @@ public class UserServiceImplementation implements UserService{
     private final AppConfig appConfig;
 
     @Override
-    public DiagnoseResponseObject diagnose(DiagnoseRequest diagnoseRequest) throws IOException {
+    public DiagnoseResponseObject diagnose(DiagnoseRequest diagnoseRequest) throws RuntimeException {
         try {
             UUID uuid = UUID.randomUUID();
             String randomId = uuid.toString();
@@ -72,8 +72,10 @@ public class UserServiceImplementation implements UserService{
             return responseObject;
             }
 
-        } catch (IOException e){
-            throw new IOException(e + " Calls can't be reached");
+        } catch (RuntimeException e){
+            throw new RuntimeException(e + " Calls can't be reached");
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
 
     }
@@ -110,11 +112,11 @@ public class UserServiceImplementation implements UserService{
         return diagnoseResults;
     }
 
-    private static int validateYearOfBirth(String yearOfBirth) throws IOException {
+    private static int validateYearOfBirth(String yearOfBirth) throws RuntimeException {
         int yob = Integer.parseInt(yearOfBirth);
         LocalDate date = LocalDate.now();
         if (yob < date.getYear() - 200 || yob > date.getYear()){
-            throw new IOException("Invalid Year Of Birth");
+            throw new RuntimeException("Invalid Year Of Birth");
         }
         return yob;
     }
