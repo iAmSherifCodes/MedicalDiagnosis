@@ -35,8 +35,7 @@ public class UserServiceImplementation implements UserService{
     @Override
     public DiagnoseResponseObject diagnose(DiagnoseRequest diagnoseRequest) throws RuntimeException {
         try {
-            UUID uuid = UUID.randomUUID();
-            String randomId = uuid.toString();
+            String uuid = UUID.randomUUID().toString();
 
             Gender gender = diagnoseRequest.getGender();
             String patientName =  diagnoseRequest.getPatientName();
@@ -51,7 +50,7 @@ public class UserServiceImplementation implements UserService{
             log.info("Requestss {}", url);
             var response = restTemplate.getForEntity(url, Object.class);
             List<DiagnoseResult> diagnoseResults = convertToObject(response);
-            MedicalRecord medicalRecord = getMedicalRecord(patientName, symptoms, diagnoseResults, randomId);
+            MedicalRecord medicalRecord = getMedicalRecord(patientName, symptoms, diagnoseResults, uuid);
             if (foundUser.isPresent()){
                 User user = foundUser.get();
                 user.getMedicalRecords().add(medicalRecord);
@@ -143,11 +142,7 @@ public class UserServiceImplementation implements UserService{
         if (foundUser.isPresent()){
             User user = foundUser.get();
             List<MedicalRecord> medicalRecords = user.getMedicalRecords();
-            MedicalRecord foundMedicalRecord = medicalRecords.stream()
-                    .filter(record -> record.getId().equals(medicalRecordId))
-                    .findFirst()
-                    .orElseThrow(() -> new NotFoundException("Medical record not found with ID: " + medicalRecordId));
-            foundMedicalRecord.setMedicalRecordStatus(medicalRecordStatus);
+            updateStatus(medicalRecordId, medicalRecordStatus, medicalRecords);
             userRepository.save(user);
 
             ValidateResultResponse resultResponse = new ValidateResultResponse();
@@ -155,7 +150,18 @@ public class UserServiceImplementation implements UserService{
 
             return resultResponse;
         }
-        return null;
+        ValidateResultResponse resultResponse = new ValidateResultResponse();
+        resultResponse.setMessage("USER NOT FOUND");
+
+        return resultResponse;
+    }
+
+    private static void updateStatus(String medicalRecordId, MedicalRecordStatus medicalRecordStatus, List<MedicalRecord> medicalRecords) throws NotFoundException {
+        MedicalRecord foundMedicalRecord = medicalRecords.stream()
+                .filter(record -> record.getId().equals(medicalRecordId))
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("Medical record not found with ID: " + medicalRecordId));
+        foundMedicalRecord.setMedicalRecordStatus(medicalRecordStatus);
     }
 
     @Override
