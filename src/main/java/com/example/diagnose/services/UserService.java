@@ -3,7 +3,6 @@ package com.example.diagnose.services;
 import com.example.diagnose.dto.request.DiagnoseRequest;
 import com.example.diagnose.dto.request.ValidateStatusRequest;
 import com.example.diagnose.dto.response.DiagnoseResponseObject;
-import com.example.diagnose.dto.response.DiagnoseResult;
 import com.example.diagnose.dto.response.ValidateResultResponse;
 import com.example.diagnose.exceptions.NotFoundException;
 import com.example.diagnose.models.MedicalRecord;
