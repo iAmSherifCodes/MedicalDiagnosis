@@ -1,9 +1,10 @@
 package com.example.diagnose;
 
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
+@SpringBootApplication @OpenAPIDefinition
 public class DiagnoseApplication {
 
 	public static void main(String[] args) {

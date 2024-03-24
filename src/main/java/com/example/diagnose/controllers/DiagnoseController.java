@@ -38,8 +38,8 @@ public class DiagnoseController {
         }
     }
 
-    @GetMapping("/results/{userId}")
-    public ResponseEntity<List<MedicalRecord>> searchDiagnosisResults(@PathVariable String userId){
-        return new ResponseEntity<>(userService.searchResults(userId), HttpStatus.OK);
+    @GetMapping("/results/{patientName}")
+    public ResponseEntity<List<MedicalRecord>> searchDiagnosisResults(@PathVariable String patientName){
+        return new ResponseEntity<>(userService.searchResults(patientName), HttpStatus.OK);
     }
 }

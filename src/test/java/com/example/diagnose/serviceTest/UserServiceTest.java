@@ -1,6 +1,5 @@
 package com.example.diagnose.serviceTest;
 
-import com.example.diagnose.constants.Gender;
 import com.example.diagnose.dto.request.DiagnoseRequest;
 import com.example.diagnose.dto.request.ValidateStatusRequest;
 import com.example.diagnose.dto.response.DiagnoseResponseObject;
@@ -30,7 +29,7 @@ public class UserServiceTest {
     @Test
     void diagnose() throws IOException {
         DiagnoseRequest request = new DiagnoseRequest();
-        request.setGender(Gender.MALE);
+        request.setGender("male");
         request.setYearOfBirth("1988");
         request.setPatientName("Doe John");
         List<Integer> symptoms = new ArrayList<>();
@@ -49,7 +48,7 @@ public class UserServiceTest {
     @Test
     void testThatRegisteredUserAddDiagnoseResult() throws IOException {
         DiagnoseRequest request = new DiagnoseRequest();
-        request.setGender(Gender.MALE);
+        request.setGender("male");
         request.setYearOfBirth("1988");
         request.setPatientName("Doe John");
         List<Integer> symptoms = new ArrayList<>();
@@ -65,7 +64,7 @@ public class UserServiceTest {
     @Test
     void testThatNewUserCanAddDiagnoseResult() throws IOException {
         DiagnoseRequest request = new DiagnoseRequest();
-        request.setGender(Gender.MALE);
+        request.setGender("female");
         request.setYearOfBirth("1988");
         request.setPatientName("Doe James");
         List<Integer> symptoms = new ArrayList<>();
@@ -81,7 +80,7 @@ public class UserServiceTest {
     @Test
     void searchResults() throws IOException {
         DiagnoseRequest request = new DiagnoseRequest();
-        request.setGender(Gender.MALE);
+        request.setGender("female");
         request.setYearOfBirth("1988");
         request.setPatientName("Doe Palmer");
         List<Integer> symptoms = new ArrayList<>();
@@ -98,7 +97,7 @@ public class UserServiceTest {
     @Test
     void validateDiagnoseResult() throws IOException, NotFoundException {
         DiagnoseRequest request = new DiagnoseRequest();
-        request.setGender(Gender.MALE);
+        request.setGender("MALE");
         request.setYearOfBirth("1988");
         request.setPatientName("Doe Palmer");
         List<Integer> symptoms = new ArrayList<>();

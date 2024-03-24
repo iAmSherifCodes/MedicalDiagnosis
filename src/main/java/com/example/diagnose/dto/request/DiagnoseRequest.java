@@ -10,7 +10,7 @@ import java.util.List;
 @Getter @Setter @ToString
 public class DiagnoseRequest {
     private List<Integer> symptoms;
-    private Gender gender;
+    private String gender;
     private String patientName;
     private String yearOfBirth;
 }

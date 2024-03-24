@@ -35,9 +35,10 @@ public class UserServiceImplementation implements UserService{
     @Override
     public DiagnoseResponseObject diagnose(DiagnoseRequest diagnoseRequest) throws RuntimeException {
         try {
+            log.info("Requwst {}", diagnoseRequest.toString());
             String uuid = UUID.randomUUID().toString();
 
-            Gender gender = diagnoseRequest.getGender();
+            String gender = diagnoseRequest.getGender().toUpperCase();
             String patientName =  diagnoseRequest.getPatientName();
             List<Integer> symptoms = diagnoseRequest.getSymptoms();
             String yearOfBirth = diagnoseRequest.getYearOfBirth();
@@ -46,7 +47,7 @@ public class UserServiceImplementation implements UserService{
 
             int yob = validateYearOfBirth(yearOfBirth);
             RestTemplate restTemplate = new RestTemplate();
-            String url = getUrl(gender, symptoms, yob);
+            String url = getUrl(Gender.valueOf(gender), symptoms, yob);
             log.info("Requestss {}", url);
             var response = restTemplate.getForEntity(url, Object.class);
             List<DiagnoseResult> diagnoseResults = convertToObject(response);
@@ -136,7 +137,7 @@ public class UserServiceImplementation implements UserService{
     public ValidateResultResponse validateDiagnoseResult(ValidateStatusRequest validateStatusRequest) throws NotFoundException {
         String patientName = validateStatusRequest.getPatientName();
         String medicalRecordId = validateStatusRequest.getMedicalRecordId();
-        MedicalRecordStatus medicalRecordStatus = MedicalRecordStatus.valueOf(validateStatusRequest.getStatus());
+        MedicalRecordStatus medicalRecordStatus = MedicalRecordStatus.valueOf(validateStatusRequest.getStatus().toUpperCase());
 
         Optional<User> foundUser = userRepository.findByPatientName(patientName);
         if (foundUser.isPresent()){
